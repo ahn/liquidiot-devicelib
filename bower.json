@@ -1,7 +1,7 @@
 {
   "name": "liquidiot-devicelib",
   "description": "",
-  "main": "index.js",
+  "main": "dist/devicelib.js",
   "authors": [
     "Antti Nieminen <anttihn@gmail.com>"
   ],
