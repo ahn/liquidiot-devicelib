@@ -55,6 +55,10 @@ function Device(dev) {
       });
     });
   };
+
+  // ???
+  this.id = dev.id || dev._id;
+  this.data = dev;
 }
 
 /**
