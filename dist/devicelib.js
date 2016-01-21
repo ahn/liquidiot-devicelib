@@ -31,10 +31,20 @@ function queryDevices(query) {
   });
 }
 
+/**
+ * A device.
+ *
+ * Currently has only one method: http(path, opts) that sends a http request
+ * using the request library. The opts are forwarded directly to the request library.
+ *
+ * TODO: more methods.
+ *
+ */
 function Device(dev) {
-  this.api = function(path, opts) {
+  this.http = function(path, opts) {
+    opts = opts || {};
     if (!opts.url) {
-      opts.url = dev.url + '/api/' + path;
+      opts.url = 'http://' + dev.host + ':' + dev.port + path;
     }
     return new Promise(function(resolve, reject) {
       request(opts, function(err, res, body) {
@@ -46,20 +56,16 @@ function Device(dev) {
       });
     });
   };
-  // TODO: ???
-  this.data = dev;
-  this.id = dev.id;
 }
 
 /**
- *
- * devices('*').forEach(function(d) { ... });
- * devices('*').api('/foo/bar', opts);
- *
+ * A set of devices, got as a result of querying.
+ * 
+ * Has methods that call the corresponding methods for all of
+ * the devices in the set, such as http(path, opts)
  *
  */
 function devices(query) {
-
   var p = queryDevices(query);
 
   function forEach(f) {
@@ -70,28 +76,29 @@ function devices(query) {
     });
   }
 
-  function api(path, opts) {
-    return p.then(function (devices) {
-      var calls = devices.map(function(d) {
-        return d.api(path, opts);
+  function callAllDevices(funcName) {
+    return function() {
+      var args = arguments;
+      return p.then(function (devices) {
+        var calls = devices.map(function(d) {
+          return d[funcName].apply(d, args);
+        });
+        // Now rejects if one rejects. Probably needs fixing...
+        return Promise.all(calls);
       });
-      // Now rejects if one rejects. Probably needs fixing...
-      return Promise.all(calls);
-    });
+    };
   }
 
   return {
     forEach: forEach,
-    api: api,
+    http: callAllDevices('http'),
     then: function(f) {
       return p.then(f);
     }
   };
 }
 
-
 exports.devices = devices;
-
 
 },{"promise":2,"request":12}],2:[function(require,module,exports){
 'use strict';
