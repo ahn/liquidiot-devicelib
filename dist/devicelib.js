@@ -109,6 +109,10 @@ function devicelib(deviceManagerUrl) {
       }
     };
   }
+  
+  return {
+    devices: devices
+  };
 }
 
 module.exports = devicelib;
